@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Restaurant Clustering Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section h2 {
+            color: #FFD700;
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: #FFD700;
+            margin-right: 15px;
+            border-radius: 2px;
+        }
+
+        .section h3 {
+            color: #4ecdc4;
+            font-size: 22px;
+            margin: 25px 0 15px 0;
+        }
+
+        .section p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feature-title {
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .tech-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #FFD700;
+            transform: scale(1.05);
+        }
+
+        .methodology-steps {
+            counter-reset: step-counter;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #4ecdc4;
+            counter-increment: step-counter;
+            position: relative;
+        }
+
+        .step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: -15px;
+            top: 20px;
+            background: #4ecdc4;
+            color: #333;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .step h4 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .result-item {
+            background: linear-gradient(45deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1));
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .result-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #FFD700;
+            color: #333;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .back-button:hover {
+            background: #FFA500;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .team-section {
+            text-align: center;
+        }
+
+        .team-member {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .member-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .member-name {
+            color: #FFD700;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .member-role {
+            color: #4ecdc4;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .header h1 {
+                font-size: 36px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-stack {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Restaurant Clustering</h2>
+            <a href="index.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Background</span>
+            </a>
+            <a href="data-visualization.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Data Visualization</span>
+            </a>
+            <a href="clustering-results.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Clustering Results</span>
+            </a>
+            <a href="prediction.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Prediction Form</span>
+            </a>
+            <a href="about.html" class="menu-item active">
+                <div class="menu-icon"></div>
+                <span>About Project</span>
+            </a>
+        </div>
+
+        <div class="main-content">
+            <a href="index.html" class="back-button">← Kembali ke Dashboard</a>
+            
+            <div class="header">
+                <h1>About Project</h1>
+                <p>Dokumentasi lengkap Restaurant Clustering Analysis</p>
+            </div>
+
+            <!-- Project Overview -->
+            <div class="section">
+                <h2>📊 Project Overview</h2>
+                <p>
+                    Restaurant Clustering Analysis adalah sebuah sistem berbasis machine learning yang dirancang untuk menganalisis dan mengelompokkan restoran berdasarkan berbagai karakteristik seperti rating, harga, jenis makanan, dan fasilitas yang tersedia.
+                </p>
+                <p>
+                    Sistem ini menggunakan algoritma clustering untuk mengidentifikasi pola dan tren dalam industri restoran, membantu pemilik usaha dalam pengambilan keputusan strategis dan analisis kompetitor.
+                </p>
+            </div>
+
+            <!-- Key Features -->
+            <div class="section">
+                <h2>🚀 Key Features</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">📈</span>
+                        <div class="feature-title">Data Visualization</div>
+                        <p>Visualisasi data interaktif dengan berbagai jenis chart dan grafik untuk memahami distribusi data restoran.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🔍</span>
+                        <div class="feature-title">Clustering Analysis</div>
+                        <p>Algoritma K-Means clustering untuk mengelompokkan restoran berdasarkan karakteristik yang serupa.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🔮</span>
+                        <div class="feature-title">Prediction System</div>
+                        <p>Sistem prediksi untuk menentukan cluster yang tepat untuk restoran baru berdasarkan input data.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">📱</span>
+                        <div class="feature-title">Responsive Design</div>
+                        <p>Interface yang responsif dan user-friendly yang dapat diakses dari berbagai perangkat.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Stack -->
+            <div class="section">
+                <h2>⚡ Technology Stack</h2>
+                <div class="tech-stack">
+                    <div class="tech-item">HTML5</div>
+                    <div class="tech-item">CSS3</div>
+                    <div class="tech-item">JavaScript</div>
+                    <div class="tech-item">Chart.js</div>
+                    <div class="tech-item">Bootstrap</div>
+                    <div class="tech-item">Machine Learning</div>
+                    <div class="tech-item">K-Means Algorithm</div>
+                    <div class="tech-item">GitHub Pages</div>
+                </div>
+            </div>
+
+            <!-- Methodology -->
+            <div class="section">
+                <h2>🔬 Methodology</h2>
+                <div class="methodology-steps">
+                    <div class="step">
+                        <h4>Data Collection & Preprocessing</h4>
+                        <p>Mengumpulkan data restoran dari berbagai sumber, membersihkan data, dan melakukan normalisasi untuk mempersiapkan data yang siap dianalisis.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Exploratory Data Analysis</h4>
+                        <p>Melakukan analisis eksplorasi untuk memahami distribusi data, korelasi antar variabel, dan mengidentifikasi outliers.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Feature Engineering</h4>
+                        <p>Memilih dan mengkonstruksi fitur-fitur yang relevan untuk clustering seperti rating, harga, tipe makanan, dan fasilitas.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Clustering Implementation</h4>
+                        <p>Menerapkan algoritma K-Means clustering dan menentukan jumlah cluster optimal menggunakan metode Elbow dan Silhouette Score.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Model Evaluation</h4>
+                        <p>Evaluasi hasil clustering menggunakan berbagai metrik dan validasi untuk memastikan kualitas pengelompokan.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Prediction System</h4>
+                        <p>Mengembangkan sistem prediksi yang dapat mengklasifikasikan restoran baru ke dalam cluster yang sesuai.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="section">
+                <h2>📊 Results Summary</h2>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-number">4</div>
+                        <div class="result-label">Clusters Identified</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-number">1,250+</div>
+                        <div class="result-label">Restaurants Analyzed</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-number">87.5%</div>
+                        <div class="result-label">Prediction Accuracy</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-number">0.74</div>
+                        <div class="result-label">Silhouette Score</div>
+                    </div>
+                </div>
+
+                <h3>Cluster Characteristics</h3>
+                <div class="step">
+                    <h4>Cluster 1 - Premium Restaurants</h4>
+                    <p>High-end restaurants dengan rating tinggi (4.5+), harga mahal (>100k), dan target market eksekutif. Fokus pada luxury experience dan kualitas premium.</p>
+                </div>
+                <div class="step">
+                    <h4>Cluster 2 - Mid-Range Restaurants</h4>
+                    <p>Restoran kelas menengah dengan rating baik (4.0-4.5), harga terjangkau (50k-100k), target keluarga dan pekerja. Strategi fokus pada kualitas dan service.</p>
+                </div>
+                <div class="step">
+                    <h4>Cluster 3 - Budget Restaurants</h4>
+                    <p>Restoran ekonomis dengan harga rendah (<50k), target pelajar dan pekerja muda. Strategi fokus pada efisiensi dan volume penjualan.</p>
+                </div>
+                <div class="step">
+                    <h4>Cluster 4 - Specialty Restaurants</h4>
+                    <p>Restoran dengan makanan spesialis atau etnik tertentu, memiliki niche market yang loyal dengan karakteristik unik dan diferensiasi menu.</p>
+                </div>
+            </div>
+
+            <!-- Future Improvements -->
+            <div class="section">
+                <h2>🚀 Future Improvements</h2>
+                <p>Beberapa pengembangan yang direncanakan untuk meningkatkan sistem:</p>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>Integrasi with real-time data sources (Google Places API, Zomato API)</li>
+                    <li>Advanced machine learning algorithms (DBSCAN, Hierarchical Clustering)</li>
+                    <li>Sentiment analysis dari customer reviews</li>
+                    <li>Location-based clustering analysis</li>
+                    <li>Business intelligence dashboard untuk owner</li>
+                    <li>Mobile application development</li>
+                    <li>Real-time recommendation engine</li>
+                </ul>
+            </div>
+
+            <!-- Team -->
+            <div class="section team-section">
+                <h2>👥 Development Team</h2>
+                <div class="team-member">
+                    <div class="member-avatar">ML</div>
+                    <div class="member-name">Machine Learning Team</div>
+                    <div class="member-role">Data Scientist & ML Engineer</div>
+                    <p>Bertanggung jawab dalam pengembangan algoritma clustering, feature engineering, dan sistem prediksi.</p>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="section">
+                <h2>📞 Contact & Support</h2>
+                <p>
+                    Untuk pertanyaan, saran, atau dukungan teknis, silakan hubungi tim pengembang melalui:
+                </p>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>📧 Email: restaurant.clustering@gmail.com</li>
+                    <li>🐙 GitHub: github.com/restaurant-clustering</li>
+                    <li>📄 Documentation: docs.restaurant-clustering.com</li>
+                    <li>💬 Issues: github.com/restaurant-clustering/issues</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth scrolling for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add loading animation for feature cards
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(30px)';
+                    card.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+
+        // Add counter animation for results
+        function animateCounters() {
+            const counters = document.querySelectorAll('.result-number');
+            counters.forEach(counter => {
+                const target = counter.textContent;
+                const isPercentage = target.includes('%');
+                const isDecimal = target.includes('.');
+                const isPlus = target.includes('+');
+                
+                let numericTarget = parseFloat(target.replace(/[^\d.]/g, ''));
+                let current = 0;
+                const increment = numericTarget / 50;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= numericTarget) {
+                        current = numericTarget;
+                        clearInterval(timer);
+                    }
+                    
+                    let displayValue = isDecimal ? current.toFixed(2) : Math.floor(current);
+                    if (isPercentage) displayValue += '%';
+                    if (isPlus && current >= numericTarget) displayValue += '+';
+                    
+                    counter.textContent = displayValue;
+                }, 50);
+            });
+        }
+
+        // Trigger counter animation when results section is visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+
+        const resultsSection = document.querySelector('.results-grid');
+        if (resultsSection) {
+            observer.observe(resultsSection);
+        }
+    </script>
+</body>
+</html>
