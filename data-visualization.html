@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization - Restaurant Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .eda-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #FFD700;
+        }
+
+        .chart-canvas {
+            width: 100% !important;
+            height: 300px !important;
+        }
+
+        .dataset-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .info-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FFD700;
+            display: block;
+        }
+
+        .info-label {
+            font-size: 14px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #FFD700;
+            color: #333;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #FFA500;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Restaurant Clustering</h2>
+            <a href="index.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Background</span>
+            </a>
+            <a href="data-visualization.html" class="menu-item active">
+                <div class="menu-icon"></div>
+                <span>Data Visualization</span>
+            </a>
+            <a href="clustering-results.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Clustering Results</span>
+            </a>
+            <a href="prediction.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Prediction Form</span>
+            </a>
+        </div>
+
+        <div class="main-content">
+            <a href="index.html" class="back-button">← Kembali ke Dashboard</a>
+            
+            <div class="header">
+                <h1>Exploratory Data Analysis (EDA)</h1>
+                <p>Analisis dan Visualisasi Dataset Restoran</p>
+            </div>
+
+            <div class="eda-section">
+                <h2 class="section-title">Karakteristik Dataset</h2>
+                <div class="dataset-info">
+                    <div class="info-card">
+                        <span class="info-number">1,250</span>
+                        <div class="info-label">Total Data Restoran</div>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-number">15</span>
+                        <div class="info-label">Jumlah Fitur</div>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-number">5</span>
+                        <div class="info-label">Kategori Restoran</div>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-number">98.5%</span>
+                        <div class="info-label">Data Lengkap</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="eda-section">
+                <h2 class="section-title">Distribusi Data</h2>
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">Distribusi Rating Restoran</div>
+                        <canvas id="ratingChart" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">Kategori Harga</div>
+                        <canvas id="priceChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="eda-section">
+                <h2 class="section-title">Analisis Geografis</h2>
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">Sebaran Restoran per Kota</div>
+                        <canvas id="cityChart" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">Tipe Makanan Terpopuler</div>
+                        <canvas id="cuisineChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="eda-section">
+                <h2 class="section-title">Sample Data Restoran</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Restoran</th>
+                            <th>Kota</th>
+                            <th>Rating</th>
+                            <th>Harga (IDR)</th>
+                            <th>Tipe Makanan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Warung Bu Kris</td>
+                            <td>Semarang</td>
+                            <td>4.5</td>
+                            <td>25,000</td>
+                            <td>Indonesia</td>
+                        </tr>
+                        <tr>
+                            <td>Pizza Corner</td>
+                            <td>Jakarta</td>
+                            <td>4.2</td>
+                            <td>85,000</td>
+                            <td>Italia</td>
+                        </tr>
+                        <tr>
+                            <td>Sate Kambing Pak Haji</td>
+                            <td>Yogyakarta</td>
+                            <td>4.8</td>
+                            <td>35,000</td>
+                            <td>Indonesia</td>
+                        </tr>
+                        <tr>
+                            <td>Sushi Tei</td>
+                            <td>Surabaya</td>
+                            <td>4.3</td>
+                            <td>120,000</td>
+                            <td>Jepang</td>
+                        </tr>
+                        <tr>
+                            <td>Ayam Geprek Bensu</td>
+                            <td>Bandung</td>
+                            <td>4.1</td>
+                            <td>18,000</td>
+                            <td>Indonesia</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Rating Distribution Chart
+        const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+        new Chart(ratingCtx, {
+            type: 'bar',
+            data: {
+                labels: ['1.0-2.0', '2.1-3.0', '3.1-4.0', '4.1-5.0'],
+                datasets: [{
+                    label: 'Jumlah Restoran',
+                    data: [45, 180, 520, 505],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 159, 64, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 205, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'white'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'white'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Price Category Chart
+        const priceCtx = document.getElementById('priceChart').getContext('2d');
+        new Chart(priceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Budget (<30k)', 'Menengah (30k-80k)', 'Premium (>80k)'],
+                datasets: [{
+                    data: [620, 480, 150],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(255, 99, 132, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'white',
+                            padding: 20
+                        }
+                    }
+                }
+            }
+        });
+
+        // City Distribution Chart
+        const cityCtx = document.getElementById('cityChart').getContext('2d');
+        new Chart(cityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jakarta', 'Surabaya', 'Bandung', 'Semarang', 'Yogyakarta', 'Medan'],
+                datasets: [{
+                    label: 'Jumlah Restoran',
+                    data: [350, 280, 220, 180, 150, 70],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'white'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'white'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Cuisine Type Chart
+        const cuisineCtx = document.getElementById('cuisineChart').getContext('2d');
+        new Chart(cuisineCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Indonesia', 'Chinese', 'Western', 'Japanese', 'Korean', 'Others'],
+                datasets: [{
+                    data: [450, 280, 220, 150, 100, 50],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'white',
+                            padding: 15
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
