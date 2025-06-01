@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Clustering Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .requirements {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .requirements h3 {
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+
+        .requirements ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #FFD700;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cluster-plot {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cluster-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .cluster-point:hover {
+            transform: scale(1.5);
+        }
+
+        .cluster-1 { background: #ff6b6b; }
+        .cluster-2 { background: #4ecdc4; }
+        .cluster-3 { background: #45b7d1; }
+        .cluster-4 { background: #96ceb4; }
+        .cluster-5 { background: #feca57; }
+
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .map-container {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-placeholder {
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="%2334495e"/><path d="M50 50 L100 80 L150 60 L200 90 L250 70 L300 100 L350 80 L350 250 L50 250 Z" fill="%232c3e50"/><circle cx="120" cy="100" r="15" fill="%23e74c3c"/><circle cx="200" cy="120" r="15" fill="%233498db"/><circle cx="280" cy="140" r="15" fill="%232ecc71"/></svg>') center/cover;
+        }
+
+        .tsne-plot {
+            position: relative;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Restaurant Clustering</h2>
+            <div class="menu-item active">
+                <div class="menu-icon"></div>
+                <span>Background</span>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Data Visualization</span>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Clustering</span>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Restaurant By Cluster</span>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Profile</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>Dashboard Data Mining - Analisis Clustering Restoran</h1>
+            </div>
+
+            <div class="requirements">
+                <h3>Persyaratan Dashboard:</h3>
+                <ol>
+                    <li>Dashboard Data Mining dengan kasus dunia nyata</li>
+                    <li>Dashboard minimal terdiri dari 3 halaman yaitu halaman awal yang berisi dataset dan karakteristiknya atau EDA (exploratory data analysis) termasuk visualisasi, halaman kedua berisi hasil pelatihan model, dan halaman terakhir berisi formulir untuk melakukan prediksi.</li>
+                    <li>Dashboard juga dapat dieksplorasi lebih lanjut dengan konten tidak terbatas seperti pada poin 2.</li>
+                </ol>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="chart-container floating">
+                    <div class="chart-title">Kmeans Clustering On Pca Dimension</div>
+                    <div class="chart-placeholder cluster-plot">
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color cluster-1"></div>
+                                <span>Cluster 1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-2"></div>
+                                <span>Cluster 2</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-3"></div>
+                                <span>Cluster 3</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-4"></div>
+                                <span>Cluster 4</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-5"></div>
+                                <span>Cluster 5</span>
+                            </div>
+                        </div>
+                        <!-- Simulated cluster points -->
+                        <div class="cluster-point cluster-1" style="left: 20%; top: 30%;"></div>
+                        <div class="cluster-point cluster-1" style="left: 25%; top: 35%;"></div>
+                        <div class="cluster-point cluster-1" style="left: 30%; top: 25%;"></div>
+                        <div class="cluster-point cluster-2" style="left: 70%; top: 60%;"></div>
+                        <div class="cluster-point cluster-2" style="left: 75%; top: 55%;"></div>
+                        <div class="cluster-point cluster-2" style="left: 80%; top: 65%;"></div>
+                        <div class="cluster-point cluster-3" style="left: 45%; top: 80%;"></div>
+                        <div class="cluster-point cluster-3" style="left: 50%; top: 75%;"></div>
+                        <div class="cluster-point cluster-3" style="left: 55%; top: 85%;"></div>
+                        <div class="cluster-point cluster-4" style="left: 60%; top: 20%;"></div>
+                        <div class="cluster-point cluster-4" style="left: 65%; top: 15%;"></div>
+                        <div class="cluster-point cluster-5" style="left: 15%; top: 70%;"></div>
+                        <div class="cluster-point cluster-5" style="left: 20%; top: 75%;"></div>
+                    </div>
+                </div>
+
+                <div class="chart-container floating">
+                    <div class="chart-title">Kmedoids Clustering On T-Sne</div>
+                    <div class="chart-placeholder tsne-plot">
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color cluster-1"></div>
+                                <span>Cluster 1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-2"></div>
+                                <span>Cluster 2</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-3"></div>
+                                <span>Cluster 3</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-4"></div>
+                                <span>Cluster 4</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-5"></div>
+                                <span>Cluster 5</span>
+                            </div>
+                        </div>
+                        <!-- T-SNE scattered points -->
+                        <div class="cluster-point cluster-1" style="left: 30%; top: 40%;"></div>
+                        <div class="cluster-point cluster-1" style="left: 35%; top: 45%;"></div>
+                        <div class="cluster-point cluster-2" style="left: 60%; top: 30%;"></div>
+                        <div class="cluster-point cluster-2" style="left: 65%; top: 35%;"></div>
+                        <div class="cluster-point cluster-3" style="left: 80%; top: 60%;"></div>
+                        <div class="cluster-point cluster-3" style="left: 85%; top: 65%;"></div>
+                        <div class="cluster-point cluster-4" style="left: 20%; top: 70%;"></div>
+                        <div class="cluster-point cluster-4" style="left: 25%; top: 75%;"></div>
+                        <div class="cluster-point cluster-5" style="left: 50%; top: 80%;"></div>
+                        <div class="cluster-point cluster-5" style="left: 55%; top: 85%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="chart-container floating">
+                    <div class="chart-title">Kmeans Clustering On Map</div>
+                    <div class="chart-placeholder map-container">
+                        <div class="map-placeholder"></div>
+                    </div>
+                </div>
+
+                <div class="chart-container floating">
+                    <div class="chart-title">Kmedoids Clustering On Map</div>
+                    <div class="chart-placeholder map-container">
+                        <div class="map-placeholder"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>Informasi Dataset Restoran</h3>
+                <p>Dashboard ini menampilkan analisis clustering untuk restoran menggunakan berbagai algoritma machine learning seperti K-means dan K-medoids. Data divisualisasikan dalam berbagai dimensi termasuk PCA dan t-SNE untuk memberikan insight yang komprehensif.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">1,250</div>
+                        <div class="stat-label">Total Restoran</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Jumlah Cluster</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">15</div>
+                        <div class="stat-label">Fitur Analisis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">95.2%</div>
+                        <div class="stat-label">Akurasi Model</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactivity to menu items
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Add hover effects to cluster points
+        document.querySelectorAll('.cluster-point').forEach(point => {
+            point.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(2)';
+                this.style.zIndex = '10';
+            });
+            
+            point.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.zIndex = '1';
+            });
+        });
+
+        // Animate cluster points on load
+        window.addEventListener('load', function() {
+            const points = document.querySelectorAll('.cluster-point');
+            points.forEach((point, index) => {
+                setTimeout(() => {
+                    point.style.opacity = '1';
+                    point.style.transform = 'scale(1)';
+                }, index * 100);
+            });
+        });
+
+        // Add floating animation delay to chart containers
+        document.querySelectorAll('.floating').forEach((element, index) => {
+            element.style.animationDelay = `${index * 0.5}s`;
+        });
+    </script>
+</body>
+</html>
