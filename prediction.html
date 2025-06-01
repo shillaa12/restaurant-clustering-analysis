@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Form - Restaurant Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .prediction-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+        }
+
+        .form-title {
+            font-size: 24px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #FFD700;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #FFD700;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-select option {
+            background: #333;
+            color: white;
+        }
+
+        .predict-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .predict-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .predict-button:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            background: linear-gradient(45deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1));
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(78, 205, 196, 0.5);
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-title {
+            font-size: 22px;
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .cluster-result {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .cluster-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .cluster-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .cluster-characteristics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .characteristic-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .characteristic-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .characteristic-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #FFD700;
+            color: #333;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #FFA500;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .info-title {
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Restaurant Clustering</h2>
+            <a href="index.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Background</span>
+            </a>
+            <a href="data-visualization.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Data Visualization</span>
+            </a>
+            <a href="clustering-results.html" class="menu-item">
+                <div class="menu-icon"></div>
+                <span>Clustering Results</span>
+            </a>
+            <a href="prediction.html" class="menu-item active">
+                <div class="menu-icon"></div>
+                <span>Prediction Form</span>
+            </a>
+        </div>
+
+        <div class="main-content">
+            <a href="index.html" class="back-button">← Kembali ke Dashboard</a>
+            
+            <div class="header">
+                <h1>Prediksi Cluster Restoran</h1>
+                <p>Masukkan data restoran untuk memprediksi cluster yang sesuai</p>
+            </div>
+
+            <div class="info-box">
+                <div class="info-title">Cara Penggunaan:</div>
+                <p>Isi semua field dengan informasi restoran yang ingin diprediksi. Sistem akan menganalisis data dan menentukan cluster yang paling sesuai berdasarkan karakteristik restoran tersebut.</p>
+            </div>
+
+            <div class="prediction-section">
+                <h2 class="form-title">Form Prediksi Cluster Restoran</h2>
+                <form id="predictionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="restaurantName">Nama Restoran</label>
+                            <input type="text" id="restaurantName" class="form-input" placeholder="contoh: Warung Bu Sari" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="city">Kota</label>
+                            <select id="city" class="form-select" required>
+                                <option value="">Pilih Kota</option>
+                                <option value="Jakarta">Jakarta</option>
+                                <option value="Surabaya">Surabaya</option>
+                                <option value="Bandung">Bandung</option>
+                                <option value="Semarang">Semarang</option>
+                                <option value="Yogyakarta">Yogyakarta</option>
+                                <option value="Medan">Medan</option>
+                                <option value="Makassar">Makassar</option>
+                                <option value="Palembang">Palembang</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="rating">Rating (1.0 - 5.0)</label>
+                            <input type="number" id="rating" class="form-input" min="1.0" max="5.0" step="0.1" placeholder="4.2" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="price">Harga Rata-rata (IDR)</label>
+                            <input type="number" id="price" class="form-input" min="5000" placeholder="50000" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cuisine">Tipe Makanan</label>
+                            <select id="cuisine" class="form-select" required>
+                                <option value="">Pilih Tipe Makanan</option>
+                                <option value="Indonesian">Indonesian</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Western">Western</option>
+                                <option value="Japanese">Japanese</option>
+                                <option value="Korean">Korean</option>
+                                <option value="Italian">Italian</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Thai">Thai</option>
+                                <option value="Fast Food">Fast Food</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="capacity">Kapasitas Tempat Duduk</label>
+                            <input type="number" id="capacity" class="form-input" min="10" placeholder="50" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="parking">Fasilitas Parkir</label>
+                            <select id="parking" class="form-select" required>
+                                <option value="">Pilih</option>
+                                <option value="Ada">Ada</option>
+                                <option value="Tidak Ada">Tidak Ada</option>
+                                <option value="Terbatas">Terbatas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="delivery">Layanan Delivery</label>
+                            <select id="delivery" class="form-select" required>
+                                <option value="">Pilih</option>
+                                <option value="Ya">Ya</option>
+                                <option value="Tidak">Tidak</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="predict-button">
+                        🔮 Prediksi Cluster Restoran
+                    </button>
+                </form>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <h2 class="result-title">Hasil Prediksi</h2>
+                <div class="cluster-result">
+                    <div class="cluster-name" id="clusterName">Cluster 2 - Restoran Menengah</div>
+                    <div class="cluster-description" id="clusterDescription">
+                        Restoran Anda diprediksi masuk dalam kategori restoran kelas menengah dengan karakteristik rating baik dan harga terjangkau.
+                    </div>
+                    <div class="cluster-characteristics">
+                        <div class="characteristic-item">
+                            <div class="characteristic-label">Confidence Score</div>
+                            <div class="characteristic-value" id="confidence">85.3%</div>
+                        </div>
+                        <div class="characteristic-item">
+                            <div class="characteristic-label">Target Market</div>
+                            <div class="characteristic-value" id="targetMarket">Keluarga & Pekerja</div>
+                        </div>
+                        <div class="characteristic-item">
+                            <div class="characteristic-label">Kompetitor Utama</div>
+                            <div class="characteristic-value" id="competitors">312 Restoran</div>
+                        </div>
+                        <div class="characteristic-item">
+                            <div class="characteristic-label">Rekomendasi Strategi</div>
+                            <div class="characteristic-value" id="strategy">Fokus Kualitas & Service</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cluster definitions
+        const clusters = {
+            1: {
+                name: "Cluster 1 - Restoran Premium",
+                description: "Restoran high-end dengan rating tinggi dan harga mahal. Target market adalah kalangan menengah atas dengan fokus pada kualitas premium dan pengalaman dining yang eksklusif.",
+                targetMarket: "Eksekutif & VIP",
+                competitors: "285 Restoran",
+                strategy: "Luxury Experience"
+            },
+            2: {
+                name: "Cluster 2 - Restoran Menengah",
+                description: "Restoran kelas menengah dengan rating baik dan harga terjangkau. Cocok untuk keluarga dan pekerja kantoran yang mencari makanan berkualitas dengan harga wajar.",
+                targetMarket: "Keluarga & Pekerja",
+                competitors: "312 Restoran",
+                strategy: "Fokus Kualitas & Service"
+            },
+            3: {
+                name: "Cluster 3 - Restoran Ekonomis",
+                description: "Restoran dengan harga terjangkau dan fokus pada volume penjualan. Target utama adalah pelajar, pekerja muda, dan keluarga dengan budget terbatas.",
+                targetMarket: "Pelajar & Pekerja Muda",
+                competitors: "428 Restoran",
+                strategy: "Efisiensi & Volume"
+            },
+            4: {
+                name: "Cluster 4 - Restoran Spesialis",
+                description: "Restoran dengan menu spesialis atau makanan etnik tertentu. Memiliki niche market yang loyal dengan karakteristik unik.",
+                targetMarket: "Food Enthusiast",
+                competitors: "156 Restoran",
+                strategy: "Diferensiasi Menu"
+            }
+        };
+
+        // Prediction logic
+        function predictCluster(data) {
+            let score = 0;
+            let clusterWeights = {1: 0, 2: 0, 3: 0, 4: 0};
+            
+            // Rating analysis
+            if (data.rating >= 4.5) {
+                clusterWeights[1] += 30;
+                clusterWeights[2] += 20;
+            } else if (data.rating >= 4.0) {
+                clusterWeights[2] += 35;
+                clusterWeights[3] += 25;
+            } else if (data.rating >= 3.5) {
+                clusterWeights[3] += 30;
+                clusterWeights[2] += 20;
+            } else {
+                clusterWeights[3] += 25;
+                clusterWeights[4] += 15;
+            }
+            
+            // Price analysis
+            if (data.price >= 100000) {
+                clusterWeights[1] += 35;
+                clusterWeights[4] += 15;
+            } else if (data.price >= 50000) {
+                clusterWeights[2] += 40;
+                clusterWeights[1] += 10;
+            } else if (data.price >= 25000) {
+                clusterWeights[3] += 35;
+                clusterWeights[2] += 15;
+            } else {
+                clusterWeights[3] += 30;
+            }
+            
+            // Cuisine analysis
+            const premiumCuisines = ['Western', 'Japanese', 'Italian'];
+            const economicCuisines = ['Indonesian', 'Fast Food'];
+            const specialistCuisines = ['Korean', 'Indian', 'Thai'];
+            
+            if (premiumCuisines.includes(data.cuisine)) {
+                clusterWeights[1] += 20;
+                clusterWeights[2] += 10;
+            } else if (economicCuisines.includes(data.cuisine)) {
+                clusterWeights[3] += 25;
+                clusterWeights[2] += 15;
+            } else if (specialistCuisines.includes(data.cuisine)) {
+                clusterWeights[4] += 30;
+                clusterWeights[2] += 10;
+            } else {
+                clusterWeights[2] += 20;
+            }
+            
+            // Capacity analysis
+            if (data.capacity >= 100) {
+                clusterWeights[1] += 15;
+                clusterWeights[2] += 20;
+            } else if (data.capacity >= 50) {
+                clusterWeights[2] += 25;
+                clusterWeights[3] += 15;
+            } else {
+                clusterWeights[3] += 20;
+                clusterWeights[4] += 25;
+            }
+            
+            // Facilities analysis
+            if (data.parking === 'Ada' && data.delivery === 'Ya') {
+                clusterWeights[1] += 10;
+                clusterWeights[2] += 15;
+            } else if (data.delivery === 'Ya') {
+                clusterWeights[2] += 10;
+                clusterWeights[3] += 15;
+            }
+            
+            // Find cluster with highest weight
+            const predictedCluster = Object.keys(clusterWeights).reduce((a, b) => 
+                clusterWeights[a] > clusterWeights[b] ? a : b
+            );
+            
+            // Calculate confidence based on weight difference
+            const maxWeight = clusterWeights[predictedCluster];
+            const secondMaxWeight = Math.max(...Object.values(clusterWeights).filter(w => w !== maxWeight));
+            const confidence = Math.min(95, Math.max(65, 65 + (maxWeight - secondMaxWeight) * 0.5));
+            
+            return {
+                cluster: parseInt(predictedCluster),
+                confidence: confidence.toFixed(1)
+            };
+        }
+
+        // Form submission handler
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = {
+                restaurantName: document.getElementById('restaurantName').value,
+                city: document.getElementById('city').value,
+                rating: parseFloat(document.getElementById('rating').value),
+                price: parseInt(document.getElementById('price').value),
+                cuisine: document.getElementById('cuisine').value,
+                capacity: parseInt(document.getElementById('capacity').value),
+                parking: document.getElementById('parking').value,
+                delivery: document.getElementById('delivery').value
+            };
+            
+            // Validate form
+            for (let key in formData) {
+                if (formData[key] === '' || formData[key] === null || isNaN(formData[key]) && typeof formData[key] === 'number') {
+                    alert('Mohon isi semua field dengan benar!');
+                    return;
+                }
+            }
+            
+            // Predict cluster
+            const prediction = predictCluster(formData);
+            const clusterInfo = clusters[prediction.cluster];
+            
+            // Update result display
+            document.getElementById('clusterName').textContent = clusterInfo.name;
+            document.getElementById('clusterDescription').textContent = clusterInfo.description;
+            document.getElementById('confidence').textContent = prediction.confidence + '%';
+            document.getElementById('targetMarket').textContent = clusterInfo.targetMarket;
+            document.getElementById('competitors').textContent = clusterInfo.competitors;
+            document.getElementById('strategy').textContent = clusterInfo.strategy;
+            
+            // Show result section
+            const resultSection = document.getElementById('resultSection');
+            resultSection.style.display = 'block';
+            
+            // Smooth scroll to result
+            resultSection.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            // Add animation
+            resultSection.style.opacity = '0';
+            resultSection.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                resultSection.style.transition = 'all 0.5s ease';
+                resultSection.style.opacity = '1';
+                resultSection.style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+        // Add input validation and formatting
+        document.getElementById('rating').addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (value > 5.0) this.value = 5.0;
+            if (value < 1.0) this.value = 1.0;
+        });
+
+        document.getElementById('price').addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value < 5000) this.value = 5000;
+        });
+
+        document.getElementById('capacity').addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value < 10) this.value = 10;
+        });
+
+        // Format currency input
+        document.getElementById('price').addEventListener('blur', function() {
+            const value = parseInt(this.value);
+            if (!isNaN(value)) {
+                this.placeholder = 'Rp ' + value.toLocaleString('id-ID');
+            }
+        });
+    </script>
+</body>
+</html>
