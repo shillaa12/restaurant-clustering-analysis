@@ -42,7 +42,6 @@ restaurant-clustering/
 ```
 
 ## 🎯 Cluster yang Diidentifikasi
-
 ### 🏆 Cluster 1 - Premium Restaurants
 - **Karakteristik**: Rating tinggi (4.5+), harga mahal (>100k)
 - **Target Market**: Eksekutif & VIP
